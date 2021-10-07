@@ -6,7 +6,7 @@ Future<List<String>> getSearchSuggestions(String query) async {
   return _yt.search.getQuerySuggestions(query);
 }
 
-Future<SearchList> searchVideo(String query) async {
+Future<SearchList?> searchVideo(String query) async {
   return _yt.search.getVideos(query);
 }
 
