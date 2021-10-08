@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:yt_player/src/screens/search_screen.dart';
 import 'package:yt_player/src/services/youtubedl_service.dart';
+import 'package:yt_player/src/shared/download_select_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -42,8 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     snapshot.data != null &&
                     snapshot.connectionState == ConnectionState.done) {
                   var manifest = snapshot.data!;
-                  print("MANIFEST\n===========");
-                  print(manifest.toString());
+
                   return SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -67,39 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: () {
                               showDialog(
                                 context: context,
-                                builder: (context) {
-                                  return Dialog(
-                                      child: SingleChildScrollView(
-                                    child: ListView(
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      shrinkWrap: true,
-                                      children: [
-                                        const ListTile(
-                                          title: Text("Video Streams"),
-                                        ),
-                                        for (var videoStream in manifest.video)
-                                          ListTile(
-                                            title: Text(videoStream
-                                                    .size.totalMegaBytes
-                                                    .toStringAsFixed(1) +
-                                                "MB"),
-                                          ),
-                                        const Divider(),
-                                        const ListTile(
-                                          title: Text("Audio Streams"),
-                                        ),
-                                        for (var audioStream in manifest.audio)
-                                          ListTile(
-                                            title: Text(audioStream
-                                                    .size.totalMegaBytes
-                                                    .toStringAsFixed(1) +
-                                                "MB"),
-                                          ),
-                                      ],
-                                    ),
-                                  ));
-                                },
+                                builder: (context) =>
+                                    DownloadSelectDialog(manifest: manifest),
                               );
                             },
                           ),
