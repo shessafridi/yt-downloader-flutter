@@ -13,3 +13,7 @@ Future<SearchList?> searchVideo(String query) async {
 Future<Video> getVideoInfo(String url) async {
   return _yt.videos.get(url);
 }
+
+Future<StreamManifest?> getVideoStreamManifest(Video video) async {
+  return _yt.videos.streams.getManifest(video.id.value);
+}
