@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:yt_player/src/screens/home_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
             TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
             TargetPlatform.linux: ZoomPageTransitionsBuilder(),
           }),
-          textTheme: 
+          textTheme:
               GoogleFonts.rubikTextTheme().apply(bodyColor: Colors.white)),
       debugShowCheckedModeBanner: false,
       home: const HomeScreen(),

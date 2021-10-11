@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:yt_player/src/models/download_state.dart';
 import 'package:yt_player/src/screens/search_screen.dart';
 import 'package:yt_player/src/services/youtubedl_service.dart';
 import 'package:yt_player/src/shared/download_select_dialog.dart';
@@ -14,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Video? selectedVideo;
   Future<StreamManifest?>? getManifest;
+  DownloadState? downloadState;
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +66,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 50,
                           child: ElevatedButton(
                             child: const Text("Download"),
-                            onPressed: () {
-                              showDialog(
+                            onPressed: () async {
+                              var state = await showDialog<DownloadState>(
                                 context: context,
                                 builder: (context) =>
                                     DownloadSelectDialog(manifest: manifest),
                               );
+
+                              setState(() {
+                                if (state != null) {
+                                  state.startDownload();
+                                }
+                                downloadState = state;
+                              });
                             },
                           ),
                         )
