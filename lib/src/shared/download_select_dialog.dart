@@ -7,9 +7,11 @@ class DownloadSelectDialog extends StatelessWidget {
   const DownloadSelectDialog({
     Key? key,
     required this.manifest,
+    required this.videoName,
   }) : super(key: key);
 
   final StreamManifest manifest;
+  final String videoName;
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +38,8 @@ class DownloadSelectDialog extends StatelessWidget {
           for (var audioStream in manifest.audio)
             InkWell(
               onTap: () async {
-                final state =
-                    await _downloadService.downloadAudio(audioStream, "Temp");
+                final state = await _downloadService.downloadAudio(
+                    audioStream, videoName);
                 Navigator.of(context).pop(state);
               },
               child: ListTile(

@@ -8,6 +8,7 @@ class DownloadState extends ChangeNotifier {
   static final _ffmpeg = FlutterFFmpeg();
 
   final String savePath;
+  final String downloadPath = '/storage/emulated/0/Download/YouTubeDownloads/';
   final Dio _dio;
   final String downloadUrl;
   final String fileName;
@@ -30,6 +31,8 @@ class DownloadState extends ChangeNotifier {
 
     notifyListeners();
 
+    await File(savePath).create(recursive: true);
+
     var res = await _dio.download(
       downloadUrl,
       savePath,
@@ -40,9 +43,12 @@ class DownloadState extends ChangeNotifier {
       },
     );
 
-    print(res.data);
+    status = DownloadStatus.processing;
+    notifyListeners();
 
-    var converted = DownloadState._ffmpeg.executeWithArguments([
+    await Directory(downloadPath).create(recursive: true);
+
+    await DownloadState._ffmpeg.executeWithArguments([
       '-i',
       savePath,
       '-vn',
@@ -51,13 +57,19 @@ class DownloadState extends ChangeNotifier {
       '-ar',
       '44100',
       '-y',
-      savePath + '.mp3'
+      downloadPath + fileName + '.mp3'
     ]);
 
     var isDownloaded = File(savePath + '.mp3').existsSync();
     print(File(savePath + '.mp3').stat());
     print(isDownloaded);
     print(savePath);
+
+    try {
+      File(savePath).deleteSync(recursive: true);
+    } catch (e) {
+      print('Failed to delete');
+    }
 
     status = DownloadStatus.done;
 
@@ -74,4 +86,4 @@ class DownloadState extends ChangeNotifier {
   }
 }
 
-enum DownloadStatus { pending, active, done, cancelled }
+enum DownloadStatus { pending, active, done, processing, cancelled }

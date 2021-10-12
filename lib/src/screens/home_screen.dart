@@ -69,8 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             onPressed: () async {
                               var state = await showDialog<DownloadState>(
                                 context: context,
-                                builder: (context) =>
-                                    DownloadSelectDialog(manifest: manifest),
+                                builder: (context) => DownloadSelectDialog(
+                                  manifest: manifest,
+                                  videoName: selectedVideo?.title ?? 'Download',
+                                ),
                               );
 
                               setState(() {
