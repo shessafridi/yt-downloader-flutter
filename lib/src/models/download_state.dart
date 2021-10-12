@@ -68,10 +68,12 @@ class DownloadState extends ChangeNotifier {
     notifyListeners();
 
     await Directory(downloadFolderPath).create(recursive: true);
-    await encodeVideo(tempFilePath, downloadedFilePath);
+    await _encodeVideo(tempFilePath, downloadedFilePath);
 
-    File(tempFolderPath).deleteSync(recursive: true);
-    File(tempFilePath).deleteSync(recursive: true);
+    try {
+      File(tempFolderPath).deleteSync(recursive: true);
+      File(tempFilePath).deleteSync(recursive: true);
+    } catch (e) {}
 
     status = DownloadStatus.done;
 
@@ -80,7 +82,7 @@ class DownloadState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> encodeVideo(
+  Future<void> _encodeVideo(
       String tempFilePath, String downloadedFilePath) async {
     await DownloadState._ffmpeg.executeWithArguments([
       '-i',
