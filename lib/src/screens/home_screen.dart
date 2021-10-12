@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-import 'package:yt_player/src/models/download_state.dart';
+import 'package:yt_player/src/pages/no_video_selected_page.dart';
+import 'package:yt_player/src/pages/video_select_page.dart';
 import 'package:yt_player/src/screens/search_screen.dart';
 import 'package:yt_player/src/services/youtubedl_service.dart';
-import 'package:yt_player/src/shared/download_select_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -15,7 +15,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Video? selectedVideo;
   Future<StreamManifest?>? getManifest;
-  DownloadState? downloadState;
 
   @override
   Widget build(BuildContext context) {
@@ -36,96 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: const Icon(Icons.search_rounded))
         ],
       ),
-      body: selectedVideo == null || getManifest == null
+      body: selectedVideo == null
           ? const NoVideoSelectedPage()
-          : FutureBuilder(
-              future: getManifest,
-              builder: (context, AsyncSnapshot<StreamManifest?> snapshot) {
-                if (snapshot.hasData &&
-                    snapshot.data != null &&
-                    snapshot.connectionState == ConnectionState.done) {
-                  var manifest = snapshot.data!;
-
-                  return SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Image.network(
-                          selectedVideo!.thumbnails.mediumResUrl,
-                          height: 200,
-                          fit: BoxFit.cover,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(10.0),
-                          child: Text(selectedVideo!.title),
-                        ),
-                        SizedBox(
-                          height: 50,
-                          child: ElevatedButton(
-                            child: const Text("Download"),
-                            onPressed: () async {
-                              var state = await showDialog<DownloadState>(
-                                context: context,
-                                builder: (context) => DownloadSelectDialog(
-                                  manifest: manifest,
-                                  videoName: selectedVideo?.title ?? 'Download',
-                                ),
-                              );
-
-                              setState(() {
-                                if (state != null) {
-                                  state.startDownload();
-                                }
-                                downloadState = state;
-                              });
-                            },
-                          ),
-                        )
-                      ],
-                    ),
-                  );
-                }
-
-                return Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      CircularProgressIndicator(),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Text("Converting your video please wait.")
-                    ],
-                  ),
-                );
-              },
-            ),
-    );
-  }
-}
-
-class NoVideoSelectedPage extends StatelessWidget {
-  const NoVideoSelectedPage({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(18.0),
-        child: Text(
-          "Start by searching for a video.",
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.headline5!.apply(
-                color: Colors.white,
-              ),
-        ),
-      ),
+          : VideoSelectedPage(
+              getManifest: getManifest, selectedVideo: selectedVideo),
     );
   }
 }

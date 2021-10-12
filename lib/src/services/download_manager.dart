@@ -20,13 +20,8 @@ class _DownloadService {
 
     if (!hasPermission) throw Error();
 
-    var appDocDir = await getDownloadDirectory();
-    String savePath = appDocDir!.path + "/temp.webm";
-
     var state = DownloadState(_dio,
-        savePath: savePath,
-        downloadUrl: stream.url.toString(),
-        fileName: fileName);
+        downloadUrl: stream.url.toString(), fileName: fileName);
 
     return state;
   }
@@ -44,25 +39,9 @@ class _DownloadService {
 
   Future<bool> requestStoragePermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
-      // Permission.manageExternalStorage,
       Permission.storage,
       Permission.mediaLibrary,
     ].request();
-
-    // if (Platform.isAndroid) {
-    //   var intent = const AndroidIntent(
-    //       data: 'package:com.example.yt_player',
-    //       action: 'android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION');
-    //   try {
-    //     await intent.launch();
-    //   } catch (e) {
-    //     print("Intent Failed");
-    //   }
-    // }
-
-    // var dir = Directory("storage/emulated/0/YouTubeDownloader");
-    // print("storage/emulated/0/Download/YouTubeDownloader");
-    // dir.createSync();
 
     return statuses.entries.every((element) => element.value.isGranted);
   }
