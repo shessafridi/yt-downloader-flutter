@@ -71,8 +71,7 @@ class DownloadState extends ChangeNotifier {
     await _encodeVideo(tempFilePath, downloadedFilePath);
 
     try {
-      File(tempFolderPath).deleteSync(recursive: true);
-      File(tempFilePath).deleteSync(recursive: true);
+      File(tempFilePath).deleteSync();
     } catch (e) {}
 
     status = DownloadStatus.done;
