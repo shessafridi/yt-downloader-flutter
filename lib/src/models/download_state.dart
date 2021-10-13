@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
+import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 
 const uuidGenerator = Uuid();
@@ -15,21 +14,32 @@ class DownloadState extends ChangeNotifier {
   final Dio _dio;
   final String downloadUrl;
   final String fileName;
-  final String uuid = uuidGenerator.v4();
+  final String basePath;
+  final String _uuid = uuidGenerator.v4();
+  final DownloadType type;
 
-  Future<String> _getDownloadDirectory() async {
-    if (Platform.isAndroid) {
-      return '/storage/emulated/0/Download/YouTubeDownloads/';
-    }
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      final dir = await getDownloadsDirectory();
-      return dir!.path.toString();
-    }
+  late final String _tempFolderPath;
+  late final String _tempFilePath;
+  late final String _downloadedFilePath;
 
-    throw UnsupportedError("Platform not supported");
+  DownloadState(this._dio,
+      {required this.basePath,
+      required this.type,
+      required this.downloadUrl,
+      required this.fileName}) {
+    _tempFolderPath = path.join(basePath, '.downloadCache');
+    _tempFilePath = path.join(_tempFolderPath, _uuid + '.temp');
+    _downloadedFilePath = path.join(basePath, isAudio ? 'Audio' : 'Video',
+        fileName + (isAudio ? '.mp3' : '.mp4'));
   }
 
-  DownloadState(this._dio, {required this.downloadUrl, required this.fileName});
+  bool get isVideo => type == DownloadType.video;
+  bool get isAudio => type == DownloadType.audio;
+
+  bool get isNotStarted => status == DownloadStatus.notStarted;
+  bool get isActive => status == DownloadStatus.active;
+  bool get isProcessing => status == DownloadStatus.processing;
+  bool get isDone => status == DownloadStatus.done;
 
   CancelToken? _cancelToken;
 
@@ -41,25 +51,17 @@ class DownloadState extends ChangeNotifier {
     if (status != DownloadStatus.notStarted) return;
     _cancelToken = CancelToken();
 
-    final basePath = await _getDownloadDirectory();
-    final downloadFolderPath = basePath;
-
-    final tempFolderPath = p.join(basePath, 'downloadCache');
-    final tempFilePath = p.join(tempFolderPath, uuid + '.temp');
-    final downloadedFilePath = p.join(basePath, fileName + '.mp3');
-
     status = DownloadStatus.active;
     notifyListeners();
 
-    await File(tempFilePath).create(recursive: true);
+    await File(_tempFilePath).create(recursive: true);
 
     var res = await _dio.download(
       downloadUrl,
-      tempFilePath,
+      _tempFilePath,
       cancelToken: _cancelToken,
       onReceiveProgress: (count, total) {
         progress = (count / total) * 100;
-        print(progress.toStringAsFixed(1) + '%');
         notifyListeners();
       },
     );
@@ -67,11 +69,15 @@ class DownloadState extends ChangeNotifier {
     status = DownloadStatus.processing;
     notifyListeners();
 
-    await Directory(downloadFolderPath).create(recursive: true);
-    await _encodeVideo(tempFilePath, downloadedFilePath);
+    await _ensureDownloadFolderIsCreated(basePath);
+    if (type == DownloadType.audio) {
+      await _transcodeAudio(_tempFilePath, _downloadedFilePath);
+    } else {
+      await _transcodeVideo(_tempFilePath, _downloadedFilePath);
+    }
 
     try {
-      File(tempFilePath).deleteSync();
+      File(_tempFilePath).deleteSync();
     } catch (e) {}
 
     status = DownloadStatus.done;
@@ -81,7 +87,15 @@ class DownloadState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _encodeVideo(
+  Future<void> _ensureDownloadFolderIsCreated(String downloadFolderPath) async {
+    await Directory(downloadFolderPath).create(recursive: true);
+    await Directory(path.join(downloadFolderPath, "Audio"))
+        .create(recursive: true);
+    await Directory(path.join(downloadFolderPath, "Video"))
+        .create(recursive: true);
+  }
+
+  Future<void> _transcodeAudio(
       String tempFilePath, String downloadedFilePath) async {
     await DownloadState._ffmpeg.executeWithArguments([
       '-i',
@@ -96,6 +110,26 @@ class DownloadState extends ChangeNotifier {
     ]);
   }
 
+  Future<void> _transcodeVideo(
+      String tempFilePath, String downloadedFilePath) async {
+    final file = File(tempFilePath);
+    await file.copy(downloadedFilePath);
+    try {
+      await file.delete();
+    } catch (e) {}
+    // await DownloadState._ffmpeg.executeWithArguments([
+    //   '-i',
+    //   tempFilePath,
+    //   '-vn',
+    //   '-ab',
+    //   '128k',
+    //   '-ar',
+    //   '44100',
+    //   '-y',
+    //   downloadedFilePath
+    // ]);
+  }
+
   void cancelDownload() {
     _cancelToken?.cancel();
     progress = 0;
@@ -104,3 +138,4 @@ class DownloadState extends ChangeNotifier {
 }
 
 enum DownloadStatus { notStarted, pending, active, done, processing, cancelled }
+enum DownloadType { video, audio }

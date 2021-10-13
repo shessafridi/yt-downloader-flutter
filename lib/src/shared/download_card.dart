@@ -26,6 +26,14 @@ class DownloadCard extends ConsumerWidget {
     return IconButton(onPressed: () {}, icon: const Icon(Icons.download_done));
   }
 
+  Widget _buildLeading(DownloadState state) {
+    if (state.isAudio) {
+      return const Icon(Icons.music_note_outlined);
+    } else {
+      return const Icon(Icons.movie_creation_outlined);
+    }
+  }
+
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final state = watch(downloadState);
@@ -35,6 +43,7 @@ class DownloadCard extends ConsumerWidget {
         state.progress.toStringAsFixed(1) + '%',
         style: const TextStyle(color: Colors.white70),
       ),
+      leading: _buildLeading(state),
       trailing: _buildTrailing(state),
     );
   }

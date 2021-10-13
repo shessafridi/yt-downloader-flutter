@@ -6,6 +6,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import 'package:yt_player/src/models/download_state.dart';
+import 'package:yt_player/src/shared/path_service.dart';
 
 final downloadServiceProvider = Provider((ref) => _DownloadService(Dio()));
 
@@ -17,11 +18,31 @@ class _DownloadService {
   Future<DownloadState> downloadAudio(
       AudioStreamInfo stream, String fileName) async {
     var hasPermission = await requestStoragePermissions();
-
     if (!hasPermission) throw Error();
 
+    final basePath = await getAppDownloadDirectory();
+
     var state = DownloadState(_dio,
-        downloadUrl: stream.url.toString(), fileName: fileName);
+        basePath: basePath,
+        type: DownloadType.audio,
+        downloadUrl: stream.url.toString(),
+        fileName: fileName);
+
+    return state;
+  }
+
+  Future<DownloadState> downloadMuxed(
+      MuxedStreamInfo stream, String fileName) async {
+    var hasPermission = await requestStoragePermissions();
+    if (!hasPermission) throw Error();
+
+    final basePath = await getAppDownloadDirectory();
+
+    var state = DownloadState(_dio,
+        basePath: basePath,
+        type: DownloadType.video,
+        downloadUrl: stream.url.toString(),
+        fileName: fileName);
 
     return state;
   }
@@ -45,6 +66,4 @@ class _DownloadService {
 
     return statuses.entries.every((element) => element.value.isGranted);
   }
-
-  downloadMuxed(MuxedStreamInfo stream) {}
 }

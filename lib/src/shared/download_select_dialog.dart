@@ -26,11 +26,23 @@ class DownloadSelectDialog extends StatelessWidget {
           const ListTile(
             title: Text("Video Streams"),
           ),
-          for (var videoStream in manifest.video)
-            ListTile(
-              title: Text(
-                  videoStream.size.totalMegaBytes.toStringAsFixed(1) + "MB"),
-            ),
+          for (var videoStream in manifest.muxed.sortByVideoQuality())
+            if (videoStream.container.name == "mp4")
+              InkWell(
+                onTap: () async {
+                  final state = await _downloadService.downloadMuxed(
+                      videoStream, videoName);
+                  Navigator.of(context).pop(state);
+                },
+                child: ListTile(
+                    leading: const Icon(Icons.movie_creation_outlined),
+                    title: Text(
+                        "${videoStream.size.totalMegaBytes.toStringAsFixed(1)}MB ${videoStream.qualityLabel}"),
+                    subtitle: Text(
+                      "${videoStream.videoResolution} | MP4",
+                      style: const TextStyle(color: Colors.white70),
+                    )),
+              ),
           const Divider(),
           const ListTile(
             title: Text("Audio Streams"),
@@ -43,8 +55,13 @@ class DownloadSelectDialog extends StatelessWidget {
                 Navigator.of(context).pop(state);
               },
               child: ListTile(
+                leading: const Icon(Icons.music_note_outlined),
                 title: Text(
-                    audioStream.size.totalMegaBytes.toStringAsFixed(1) + "MB"),
+                    "${audioStream.size.totalMegaBytes.toStringAsFixed(1)}MB"),
+                subtitle: Text(
+                  "${audioStream.bitrate} | MP3",
+                  style: const TextStyle(color: Colors.white70),
+                ),
               ),
             ),
         ],
