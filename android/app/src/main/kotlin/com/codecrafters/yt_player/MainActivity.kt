@@ -1,4 +1,4 @@
-package com.codecrafters.yt_downloader
+package com.codecrafters.yt_player
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -59,6 +59,7 @@ class _DownloadService {
   }
 
   Future<bool> requestStoragePermissions() async {
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) return true;
     Map<Permission, PermissionStatus> statuses = await [
       Permission.storage,
       Permission.mediaLibrary,
