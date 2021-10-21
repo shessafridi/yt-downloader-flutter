@@ -20,7 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-        initialIndex: 1,
         length: 2,
         child: Scaffold(
             appBar: AppBar(
