@@ -9,12 +9,14 @@ import 'package:yt_player/src/shared/youtube_card.dart';
 class VideoSelectedPage extends ConsumerWidget {
   const VideoSelectedPage({
     Key? key,
+    required this.onDissmissed,
     required this.getManifest,
     required this.selectedVideo,
   }) : super(key: key);
 
   final Future<StreamManifest?>? getManifest;
   final Video? selectedVideo;
+  final void Function(DismissDirection) onDissmissed;
 
   Future<void> _handleDownloadPressed(
       BuildContext context, StreamManifest manifest) async {
@@ -30,6 +32,7 @@ class VideoSelectedPage extends ConsumerWidget {
 
     if (state != null) {
       list.state.add(state);
+      DefaultTabController.of(context)?.animateTo(1);
     }
   }
 
@@ -44,18 +47,29 @@ class VideoSelectedPage extends ConsumerWidget {
           var manifest = snapshot.data!;
 
           return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                YouTubeCard(selectedVideo!),
-                SizedBox(
-                  height: 50,
-                  child: ElevatedButton(
-                    child: const Text("Download"),
-                    onPressed: () => _handleDownloadPressed(context, manifest),
+            child: Align(
+              alignment: Alignment.center,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 500),
+                child: Dismissible(
+                  key: ObjectKey(selectedVideo),
+                  onDismissed: onDissmissed,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      YouTubeCard(selectedVideo!),
+                      SizedBox(
+                        height: 50,
+                        child: ElevatedButton(
+                          child: const Text("Download"),
+                          onPressed: () =>
+                              _handleDownloadPressed(context, manifest),
+                        ),
+                      )
+                    ],
                   ),
-                )
-              ],
+                ),
+              ),
             ),
           );
         }

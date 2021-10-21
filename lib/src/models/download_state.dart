@@ -78,7 +78,7 @@ class DownloadState extends ChangeNotifier {
 
     try {
       File(_tempFilePath).deleteSync();
-    } catch (e) {}
+    } catch (_) {}
 
     status = DownloadStatus.done;
 
@@ -97,26 +97,35 @@ class DownloadState extends ChangeNotifier {
 
   Future<void> _transcodeAudio(
       String tempFilePath, String downloadedFilePath) async {
-    await DownloadState._ffmpeg.executeWithArguments([
-      '-i',
-      tempFilePath,
-      '-vn',
-      '-ab',
-      '128k',
-      '-ar',
-      '44100',
-      '-y',
-      downloadedFilePath
-    ]);
+    if (Platform.isAndroid || Platform.isIOS) {
+      await DownloadState._ffmpeg.executeWithArguments([
+        '-i',
+        tempFilePath,
+        '-vn',
+        '-ab',
+        '128k',
+        '-ar',
+        '44100',
+        '-y',
+        downloadedFilePath
+      ]);
+    } else {
+      await _transcodeNoop(tempFilePath, downloadedFilePath);
+    }
   }
 
-  Future<void> _transcodeVideo(
+  Future<void> _transcodeNoop(
       String tempFilePath, String downloadedFilePath) async {
     final file = File(tempFilePath);
     await file.copy(downloadedFilePath);
     try {
       await file.delete();
-    } catch (e) {}
+    } catch (_) {}
+  }
+
+  Future<void> _transcodeVideo(
+      String tempFilePath, String downloadedFilePath) async {
+    await _transcodeNoop(tempFilePath, downloadedFilePath);
     // await DownloadState._ffmpeg.executeWithArguments([
     //   '-i',
     //   tempFilePath,

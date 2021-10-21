@@ -47,42 +47,7 @@ class VideoSearch extends SearchDelegate<Video?> {
                             .apply(color: Colors.white),
                       ));
                     }
-                    return ListView.builder(
-                      // shrinkWrap: true,
-                      itemCount: snapshot.data!.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index < snapshot.data!.length) {
-                          final video = snapshot.data![index];
-                          return InkWell(
-                            child: YouTubeCard(video),
-                            onTap: () {
-                              close(context, video);
-                            },
-                          );
-                        } else {
-                          snapshot.data?.nextPage().then((value) {
-                            if (value != null) {
-                              setState(() {
-                                snapshot.data?.addAll(value);
-                                if (snapshot.data?.isEmpty ?? false) {
-                                  listEnded = true;
-                                }
-                              });
-                            }
-                          });
-                          if (listEnded) {
-                            return const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text("You have reached the end"),
-                            );
-                          }
-                          return const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                      },
-                    );
+                    return _buildGrid(snapshot, setState, listEnded);
                   }
                   if (snapshot.hasError) {
                     return const Center(
@@ -94,6 +59,64 @@ class VideoSearch extends SearchDelegate<Video?> {
             },
           )
         : const Center(child: Text("Search Something"));
+  }
+
+  Widget _buildGrid(AsyncSnapshot<SearchList?> snapshot, StateSetter setState,
+      bool listEnded) {
+    return Align(
+      alignment: Alignment.center,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmall = constraints.maxWidth > 800;
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: isSmall ? 4 : 10),
+              child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isSmall ? 3 : 1,
+                    mainAxisExtent: 300,
+                    mainAxisSpacing: isSmall ? 10 : 0,
+                    crossAxisSpacing: 10),
+                itemBuilder: (context, index) {
+                  if (index < snapshot.data!.length) {
+                    final video = snapshot.data![index];
+                    return InkWell(
+                      child: YouTubeCard(video),
+                      onTap: () {
+                        close(context, video);
+                      },
+                    );
+                  } else {
+                    snapshot.data?.nextPage().then((value) {
+                      if (value != null) {
+                        setState(() {
+                          snapshot.data?.addAll(value);
+                          if (snapshot.data?.isEmpty ?? false) {
+                            listEnded = true;
+                          }
+                        });
+                      }
+                    });
+                    if (listEnded) {
+                      return const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text("You have reached the end"),
+                      );
+                    }
+                    return const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                },
+                itemCount: snapshot.data!.length + 1,
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 
   @override

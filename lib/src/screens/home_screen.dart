@@ -20,6 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
+        initialIndex: 1,
         length: 2,
         child: Scaffold(
             appBar: AppBar(
@@ -33,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         selectedVideo = video;
                         getManifest = getVideoStreamManifest(video);
+                        DefaultTabController.of(context)?.animateTo(0);
                       });
                     },
                     icon: const Icon(Icons.search_rounded))
@@ -57,7 +59,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   const NoVideoSelectedPage()
                 else
                   VideoSelectedPage(
-                      getManifest: getManifest, selectedVideo: selectedVideo),
+                      onDissmissed: (direction) {
+                        setState(() {
+                          selectedVideo = null;
+                          getManifest = null;
+                        });
+                      },
+                      getManifest: getManifest,
+                      selectedVideo: selectedVideo),
                 const DownloadPage()
               ],
             )));
