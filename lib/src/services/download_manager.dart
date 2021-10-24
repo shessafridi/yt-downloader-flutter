@@ -26,9 +26,14 @@ class _DownloadService {
         basePath: basePath,
         type: DownloadType.audio,
         downloadUrl: stream.url.toString(),
-        fileName: fileName);
+        fileName: getLegalFileName(fileName));
 
     return state;
+  }
+
+  static String getLegalFileName(String fileName) {
+    final regex = RegExp("[\\/:\"*?<>|]+");
+    return fileName.replaceAllMapped(regex, (match) => "");
   }
 
   Future<DownloadState> downloadMuxed(

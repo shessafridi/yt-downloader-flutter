@@ -2,9 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:yt_player/src/screens/home_screen.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
-void main() {
-  runApp(const ProviderScope(child: MyApp()));
+Future<void> main() async {
+  await SentryFlutter.init(
+    (options) {
+      options.dsn =
+          'https://4be5a0d839b1430aa566922bfd28275e@o453848.ingest.sentry.io/6030869';
+    },
+    appRunner: () => runApp(const ProviderScope(child: MyApp())),
+  );
 }
 
 class MyApp extends StatelessWidget {
