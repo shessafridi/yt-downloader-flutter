@@ -2,14 +2,14 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
+// import 'package:flutter_ffmpeg/flutter_ffmpeg.dart';
 import 'package:path/path.dart' as path;
 import 'package:uuid/uuid.dart';
 
 const uuidGenerator = Uuid();
 
 class DownloadState extends ChangeNotifier {
-  static final _ffmpeg = FlutterFFmpeg();
+  // static final _ffmpeg = FlutterFFmpeg();
 
   final Dio _dio;
   final String downloadUrl;
@@ -97,21 +97,22 @@ class DownloadState extends ChangeNotifier {
 
   Future<void> _transcodeAudio(
       String tempFilePath, String downloadedFilePath) async {
-    if (Platform.isAndroid || Platform.isIOS) {
-      await DownloadState._ffmpeg.executeWithArguments([
-        '-i',
-        tempFilePath,
-        '-vn',
-        '-ab',
-        '128k',
-        '-ar',
-        '44100',
-        '-y',
-        downloadedFilePath
-      ]);
-    } else {
-      await _transcodeNoop(tempFilePath, downloadedFilePath);
-    }
+    // if (Platform.isAndroid || Platform.isIOS) {
+    //   await DownloadState._ffmpeg.executeWithArguments([
+    //     '-i',
+    //     tempFilePath,
+    //     '-vn',
+    //     '-ab',
+    //     '128k',
+    //     '-ar',
+    //     '44100',
+    //     '-y',
+    //     downloadedFilePath
+    //   ]);
+    // } else {
+    //   await _transcodeNoop(tempFilePath, downloadedFilePath);
+    // }
+    await _transcodeNoop(tempFilePath, downloadedFilePath);
   }
 
   Future<void> _transcodeNoop(

@@ -35,7 +35,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   youtube_explode_dart: ^1.10.8
   google_fonts: ^2.1.0
-  flutter_ffmpeg: ^0.4.2
+  # flutter_ffmpeg: ^0.4.2
   dio: ^4.0.0
   path_provider: ^2.0.5
   permission_handler: ^8.2.2
